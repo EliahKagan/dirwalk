@@ -1,0 +1,8 @@
+[package]
+name = "dirwalk"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.94"
+gix = "0.68.0"
