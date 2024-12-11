@@ -35,7 +35,8 @@ fn main() -> Result<()> {
         .map(|p| p.as_encoded_bytes().as_bstr().to_owned());
 
     for item in make_dirwalk_iterator(patterns)? {
-        println!("{:?}", item?.entry);
+        let entry = item?.entry;
+        println!("{}  ({:?})", entry.rela_path, entry.status);
     }
     Ok(())
 }
