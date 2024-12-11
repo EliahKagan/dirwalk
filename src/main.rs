@@ -1,7 +1,10 @@
+use anyhow::Result;
 use gix::dir::walk::{CollapsedEntriesEmissionMode, EmissionMode};
+use gix::dirwalk::Iter;
 
-fn main() -> anyhow::Result<()> {
+fn make_dirwalk_iterator() -> Result<Iter> {
     let repo = gix::discover(".")?;
+
     let options: gix::dirwalk::Options = repo
         .dirwalk_options()?
         .recurse_repositories(false)
@@ -15,8 +18,17 @@ fn main() -> anyhow::Result<()> {
         .emit_collapsed(Some(CollapsedEntriesEmissionMode::All))
         .symlinks_to_directories_are_ignored_like_directories(false)
         .empty_patterns_match_prefix(false);
-    let index = repo.index()?;
-    for item in repo.dirwalk_iter(index, Vec::<&str>::new(), Default::default(), options)? {
+
+    Ok(repo.dirwalk_iter(
+        repo.index()?,
+        Vec::<&str>::new(),
+        Default::default(),
+        options,
+    )?)
+}
+
+fn main() -> Result<()> {
+    for item in make_dirwalk_iterator()? {
         println!("{:?}", item?.entry);
     }
     Ok(())
