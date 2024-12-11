@@ -1,8 +1,15 @@
+use std::env::args_os;
+
 use anyhow::Result;
+use bstr::{BString, ByteSlice};
 use gix::dir::walk::{CollapsedEntriesEmissionMode, EmissionMode};
 use gix::dirwalk::Iter;
 
-fn make_dirwalk_iterator() -> Result<Iter> {
+fn make_dirwalk_iterator<S, P>(patterns: P) -> Result<Iter>
+where
+    S: Into<BString>,
+    P: IntoIterator<Item = S>,
+{
     let repo = gix::discover(".")?;
 
     let options: gix::dirwalk::Options = repo
@@ -19,16 +26,15 @@ fn make_dirwalk_iterator() -> Result<Iter> {
         .symlinks_to_directories_are_ignored_like_directories(false)
         .empty_patterns_match_prefix(false);
 
-    Ok(repo.dirwalk_iter(
-        repo.index()?,
-        Vec::<&str>::new(),
-        Default::default(),
-        options,
-    )?)
+    Ok(repo.dirwalk_iter(repo.index()?, patterns, Default::default(), options)?)
 }
 
 fn main() -> Result<()> {
-    for item in make_dirwalk_iterator()? {
+    let patterns = args_os()
+        .skip(1)
+        .map(|p| p.as_encoded_bytes().as_bstr().to_owned());
+
+    for item in make_dirwalk_iterator(patterns)? {
         println!("{:?}", item?.entry);
     }
     Ok(())

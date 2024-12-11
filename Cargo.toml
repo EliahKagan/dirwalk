@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.94"
+bstr = "1.11.1"
 gix = "0.68.0"
