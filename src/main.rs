@@ -29,14 +29,35 @@ where
     Ok(repo.dirwalk_iter(repo.index()?, patterns, Default::default(), options)?)
 }
 
+fn build_table(patterns: impl Iterator<Item = BString>) -> Result<Vec<(String, String)>> {
+    let mut table = Vec::new();
+
+    for item in make_dirwalk_iterator(patterns)? {
+        let entry = item?.entry;
+        let status = format!("{:?}", entry.status);
+        let path = format!("{}", entry.rela_path);
+        table.push((status, path));
+    }
+
+    Ok(table)
+}
+
+fn print_table(table: &Vec<(String, String)>) {
+    let status_width = table
+        .iter()
+        .map(|(status, _)| status.chars().count())
+        .max()
+        .unwrap_or(1);
+
+    for (status, path) in table {
+        println!("{status:>width$}    {path}", width = status_width);
+    }
+}
+
 fn main() -> Result<()> {
     let patterns = args_os()
         .skip(1)
         .map(|p| p.as_encoded_bytes().as_bstr().to_owned());
-
-    for item in make_dirwalk_iterator(patterns)? {
-        let entry = item?.entry;
-        println!("{}  ({:?})", entry.rela_path, entry.status);
-    }
+    print_table(&build_table(patterns)?);
     Ok(())
 }
