@@ -1,3 +1,5 @@
+//! Show how `gix::dirwalk` classifies entries.
+
 use std::env::args_os;
 
 use anyhow::Result;
